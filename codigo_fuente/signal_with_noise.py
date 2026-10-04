@@ -69,7 +69,7 @@ for n in range(N_PUNTOS):
 # ==============================================================================
 # FASE 5: EXPORTACIÓN PARA VERILOG (weights.vh)
 # ==============================================================================
-# Generamos el archivo de constantes que consumirá la Etapa 2 en Verilog
+#1. Generamos el archivo de constantes que consumirá la Etapa 2 en Verilog
 with open("weights.vh", "w") as f:
     f.write("// =========================================================\n")
     f.write("// Archivo generado automaticamente desde Python (Etapa 1)\n")
@@ -84,25 +84,29 @@ with open("weights.vh", "w") as f:
 print("-> Archivo 'weights.vh' generado con exito.")
 print(f"   Pesos cuantizados INT4: W = {w_int4.tolist()}")
 
+# 2. Exportar la señal simulada cuantizada (Para Etapa 3 / Memoria Verilog)
+# Formato hexadecimal de 4 bits en Complemento a 2
+with open("input_signal.mem", "w") as f:
+    for val in x_int4:
+        f.write(f"{(val & 0xF):1X}\n")
 
-#==============================================================================
-# FASE 6: GRAFICAR RESULTADOS DE LA ETAPA 1
+print("-> Archivos generados con exito:")
+print("   1. 'weights.vh'       -> Coeficientes fijados para el modulo MAC:")
+print(f"      Pesos cuantizados INT4: W = {w_int4.tolist()}")
+print("   2. 'input_signal.mem' -> 100 muestras cuantizadas del sensor simulado")
+
+
+# ==============================================================================
+# FASE 6: GRAFICAR RESULTADOS DE LA ETAPA 1 (CUANTIZADO)
 # ==============================================================================
 plt.figure(figsize=(10, 5))
-
-# 1. Señal con ruido cuantizada (los picos ruidosos en escalones)
-plt.plot(tiempo, x_int4, label='Entrada con Ruido (INT4)', color='orange', alpha=0.5, linestyle=':')
-
-# 2. Señal limpia filtrada por la neurona (verás que la forma del seno se recupera)
-plt.plot(tiempo, y_int4, label='Salida Filtrada Neurona (INT4)', color='blue', linewidth=2.5)
-
-# 3. Umbrales del detector de eventos
-plt.axhline(y=4, color='red', linestyle='--', alpha=0.7, label='Umbral Evento (+4)')
-plt.axhline(y=-4, color='red', linestyle='--', alpha=0.7, label='Umbral Evento (-4)')
-
-plt.title("Etapa 1: Señal Senoidal Cuantizada en INT4 y Filtrada")
+plt.step(tiempo, x_int4, label='Entrada Cuantizada con Ruido (x_int4)', color='orange', alpha=0.7, where='mid')
+plt.step(tiempo, y_int4, label='Salida Neurona Filtrada (y_int4)', color='blue', linewidth=2, where='mid')
+plt.axhline(y=4, color='red', linestyle='--', label='Umbral Evento (+4)')
+plt.axhline(y=-4, color='red', linestyle='--', label='Umbral Evento (-4)')
+plt.title("Etapa 1: Modelo TinyML INT4 - Entrada vs Salida Filtrada")
 plt.xlabel("Tiempo (s)")
-plt.ylabel("Amplitud Discreta [-8 a +7]")
+plt.ylabel("Nivel Digital INT4 [-8 a +7]")
 plt.legend()
 plt.grid(True)
 plt.show()
