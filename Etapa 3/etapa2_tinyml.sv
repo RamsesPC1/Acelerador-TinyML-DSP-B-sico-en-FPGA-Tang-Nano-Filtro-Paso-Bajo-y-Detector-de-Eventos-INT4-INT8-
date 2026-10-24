@@ -9,10 +9,10 @@ module etapa2_tinyml (
 );
 
     // Coeficientes del filtro paso bajo
-    localparam signed [3:0] H0 = 4'sd1;
-    localparam signed [3:0] H1 = 4'sd3;
-    localparam signed [3:0] H2 = 4'sd3;
-    localparam signed [3:0] H3 = 4'sd1;
+    `include "weights.vh"
+
+    //Umbral de detección 
+    localparam signed [9:0] UMBRAL = 10'sd32;
 
     wire signed [7:0] p0;
     wire signed [7:0] p1;
@@ -23,10 +23,10 @@ module etapa2_tinyml (
     wire signed [8:0] suma1;
 
     // Núcleo MAC
-    assign p0 = x0 * H0;
-    assign p1 = x1 * H1;
-    assign p2 = x2 * H2;
-    assign p3 = x3 * H3;
+    assign p0 = x0 * W0;
+    assign p1 = x1 * W1;
+    assign p2 = x2 * W2;
+    assign p3 = x3 * W3;
 
     // Árbol balanceado de nivel 1
     assign suma0 = p0 + p1;
@@ -35,8 +35,7 @@ module etapa2_tinyml (
     // Árbol balanceado de nivel 2
     assign y = suma0 + suma1;
 
-    // Detector de eventos
-    localparam signed [9:0] UMBRAL = 10'sd20;
+    
     assign alerta = (y > UMBRAL);
 
 endmodule
